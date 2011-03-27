@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+'''
+File: pygrep
+Author: Marian Ignev
+Description: Simple grep like functionality written in Python just for fun!
+
+Usage:
+    
+    1) ps aux |pygrep -r '[a-Z0-9]+' 
+    -> returns all lines back where matches the pattern
+    or
+    2) ps aux |pygrep -r 'some string' -s ':' -o '0,1,2,3' 
+    -> match all lines which contain the pattern 
+    after that split result by ':' and print result list keys in -p argument  
+
+Example:
+    echo 'How are you? ... Get out!' |pygrep -r 'are' -s '' -o '0,1' # returns: How are
+'''
+import sys
+import re
+import optparse
+
+def main():
+    parser = optparse.OptionParser("usage: %prog [options] arg1 arg2")
+
+    parser.add_option("-t", "--target", dest="target",
+                        default=None, type="string",
+                        help="Enter target string if it works on standalone mode")
+    parser.add_option("-r", "--regx", dest="regx",
+                        default=None, type="string",
+                        help="PCRE pattern")
+    parser.add_option("-s", "--split", dest="split",
+                        default=None, type="string",
+                        help="Split result string by some char or white space")
+    parser.add_option("-o", "--output", dest="output",
+                        default=None, type="string",
+                        help="If is used -s arg, -o args is used to return only selected keys from result list")
+
+    (options, args) = parser.parse_args()
+
+    if options.regx is None:
+        parser.print_help()
+        sys.exit()
+
+    if options.target:
+        greper( options.regx, options.target, options.split, options.output )
+    else:
+        for line in sys.stdin:
+            greper( options.regx, line, options.split, options.output )
+
+def greper( regx, target, _split, output):
+    match = re.search( regx, target )
+    result = ''
+    if match:
+        if _split != None:
+            if len(_split) == 0:
+                result = target.split()
+            else:
+                result = target.split( _split )
+
+        if output:
+            newoutput = ''
+            for item in output.split(','):
+                newoutput += result[int(item)] + ' ' 
+            
+            result = newoutput.strip() 
+
+        if len(result) == 0:
+            result = target
+
+        if isinstance(result, list):
+            result = result[0].strip()
+
+        print result.strip()
+
+if __name__ == '__main__':
+    main()
