@@ -1,4 +1,4 @@
-# Command-Line tools
+# Command-Line Tools
 These are my simple command-line tools written in Python just for fun :)).
 
 ## pygrep
